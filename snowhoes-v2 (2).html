@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SnowHoes — L'Hiver Autrement</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,600&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --void: #04060d;
+      --deep: #070b18;
+      --navy: #0b1124;
+      --frost: #c8dff0;
+      --ice: #e8f4fd;
+      --silver: #9ab3c8;
+      --dim: #4a6070;
+      --glow: rgba(160,210,240,0.18);
+      --glow2: rgba(100,170,220,0.12);
+      --accent: #a8d4f0;
+      --accent-warm: #f0d4a8;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+
+    body {
+      background: var(--void);
+      color: var(--ice);
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── CURSOR ───────────────────────────────── */
+    #cur {
+      width:6px; height:6px; background:var(--frost); border-radius:50%;
+      position:fixed; top:0; left:0; pointer-events:none; z-index:9999;
+      transform:translate(-50%,-50%); transition:width .2s,height .2s;
+      mix-blend-mode:screen;
+    }
+    #cur-ring {
+      width:28px; height:28px; border:1px solid rgba(200,223,240,.4);
+      border-radius:50%; position:fixed; top:0; left:0; pointer-events:none;
+      z-index:9998; transform:translate(-50%,-50%); transition:all .15s ease;
+    }
+    body:has(a:hover) #cur { width:16px; height:16px; }
+
+    /* ── STAR CANVAS ──────────────────────────── */
+    #star-canvas {
+      position:fixed; inset:0; z-index:0; pointer-events:none;
+    }
+
+    /* ── NOISE OVERLAY ────────────────────────── */
+    body::before {
+      content:'';
+      position:fixed; inset:0; z-index:1; pointer-events:none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity:.025;
+    }
+
+    /* ── NAV ──────────────────────────────────── */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:200;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:2rem 5vw;
+      transition:all .4s;
+    }
+    nav.scrolled {
+      padding:1.2rem 5vw;
+      background:rgba(4,6,13,.75);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(200,223,240,.06);
+    }
+    .nav-logo {
+      font-family:'Cormorant Garamond', serif;
+      font-size:1.5rem; font-weight:400; letter-spacing:4px;
+      text-transform:uppercase; color:var(--ice);
+      text-decoration:none;
+      display:flex; align-items:center; gap:.8rem;
+    }
+    .nav-logo-mark {
+      width:32px; height:32px; border:1px solid rgba(200,223,240,.3);
+      border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-size:.9rem;
+    }
+    .nav-links {
+      display:flex; gap:2.5rem; list-style:none;
+    }
+    .nav-links a {
+      font-size:.72rem; letter-spacing:2.5px; text-transform:uppercase;
+      color:var(--silver); text-decoration:none; transition:color .3s;
+      font-weight:400;
+    }
+    .nav-links a:hover { color:var(--ice); }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      min-height:100vh; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      text-align:center; position:relative; z-index:2;
+      padding:0 5vw;
+    }
+    .hero-eyebrow {
+      font-size:.65rem; letter-spacing:5px; text-transform:uppercase;
+      color:var(--silver); margin-bottom:2.5rem;
+      opacity:0; animation:fadeIn 1.2s .3s ease forwards;
+    }
+    .hero-eyebrow span { color:var(--accent); }
+
+    .hero-title {
+      font-family:'Cormorant Garamond', serif;
+      font-size:clamp(4.5rem, 13vw, 11rem);
+      font-weight:300; line-height:.92;
+      letter-spacing:-1px;
+      opacity:0; animation:fadeIn 1.2s .5s ease forwards;
+    }
+    .hero-title em {
+      font-style:italic; font-weight:300;
+      background:linear-gradient(135deg, var(--frost) 0%, rgba(200,223,240,.5) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .hero-title .line2 {
+      display:block;
+      background:linear-gradient(135deg, var(--ice) 30%, var(--accent) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .hero-sub {
+      margin-top:2.5rem;
+      font-size:.88rem; letter-spacing:1.5px; line-height:2;
+      color:var(--silver); max-width:460px;
+      opacity:0; animation:fadeIn 1.2s .7s ease forwards;
+    }
+
+    .hero-divider {
+      width:1px; height:80px;
+      background:linear-gradient(to bottom, transparent, var(--accent), transparent);
+      margin:3rem auto 0;
+      opacity:0; animation:fadeIn 1.2s 1s ease forwards;
+    }
+
+    .hero-scroll {
+      margin-top:1rem; font-size:.65rem; letter-spacing:3px;
+      text-transform:uppercase; color:var(--dim);
+      opacity:0; animation:fadeIn 1.2s 1.1s ease forwards;
+      animation-fill-mode:forwards;
+    }
+
+    /* ── INTRO BAND ───────────────────────────── */
+    .band {
+      position:relative; z-index:2;
+      border-top:1px solid rgba(200,223,240,.06);
+      border-bottom:1px solid rgba(200,223,240,.06);
+      padding:.9rem 0; overflow:hidden;
+      background:rgba(11,17,36,.4); backdrop-filter:blur(10px);
+    }
+    .band-track {
+      display:flex; gap:4rem;
+      animation:slide 20s linear infinite; white-space:nowrap;
+    }
+    .band-track span {
+      font-size:.65rem; letter-spacing:4px; text-transform:uppercase;
+      color:var(--dim); flex-shrink:0;
+      display:inline-flex; align-items:center; gap:1.5rem;
+    }
+    .band-track span::after {
+      content:''; width:4px; height:4px; border-radius:50%;
+      background:var(--accent); display:inline-block; opacity:.5;
+    }
+    @keyframes slide { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* ── SECTION WRAPPER ──────────────────────── */
+    .wrap { padding:10rem 5vw; position:relative; z-index:2; }
+    .wrap-sm { padding:6rem 5vw; position:relative; z-index:2; }
+
+    /* ── SECTION LABEL ────────────────────────── */
+    .label {
+      font-size:.62rem; letter-spacing:4px; text-transform:uppercase;
+      color:var(--accent); margin-bottom:1.2rem; display:flex;
+      align-items:center; gap:1rem;
+    }
+    .label::before {
+      content:''; width:30px; height:1px; background:var(--accent); display:block;
+    }
+
+    /* ── ORIGINS ──────────────────────────────── */
+    .origins { max-width:1200px; margin:0 auto; }
+    .origins-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:6rem;
+      align-items:start; margin-top:4rem;
+    }
+    .origins-left {}
+    .origins-title {
+      font-family:'Cormorant Garamond', serif;
+      font-size:clamp(2.5rem, 5vw, 4.5rem);
+      font-weight:300; line-height:1.05;
+      letter-spacing:.5px;
+    }
+    .origins-title em { font-style:italic; color:var(--frost); }
+    .origins-body {
+      margin-top:2.5rem; font-size:.88rem; line-height:2.1;
+      color:var(--silver); max-width:480px;
+    }
+    .origins-body p + p { margin-top:1.5rem; }
+    .origins-quote {
+      margin-top:3rem; padding-left:1.5rem;
+      border-left:1px solid var(--accent);
+    }
+    .origins-quote blockquote {
+      font-family:'Cormorant Garamond', serif;
+      font-style:italic; font-size:1.25rem; font-weight:300;
+      color:var(--frost); line-height:1.6;
+    }
+    .origins-quote cite {
+      display:block; margin-top:.8rem;
+      font-size:.65rem; letter-spacing:3px; text-transform:uppercase;
+      color:var(--dim); font-style:normal;
+    }
+
+    .origins-right { padding-top:4rem; }
+    .stat-block {
+      border-top:1px solid rgba(200,223,240,.08); padding:2rem 0;
+      display:flex; justify-content:space-between; align-items:baseline;
+    }
+    .stat-block:last-child { border-bottom:1px solid rgba(200,223,240,.08); }
+    .stat-n {
+      font-family:'Cormorant Garamond', serif;
+      font-size:3.5rem; font-weight:300; color:var(--frost); line-height:1;
+    }
+    .stat-n sup { font-size:1rem; }
+    .stat-desc { font-size:.7rem; letter-spacing:2px; text-transform:uppercase; color:var(--dim); text-align:right; max-width:180px; line-height:1.6; }
+
+    /* ── PRODUCTS ─────────────────────────────── */
+    .products-section { max-width:1200px; margin:0 auto; }
+    .products-head {
+      display:flex; justify-content:space-between; align-items:flex-end;
+      margin-bottom:4rem; flex-wrap:wrap; gap:2rem;
+    }
+    .products-title {
+      font-family:'Cormorant Garamond', serif;
+      font-size:clamp(2.5rem, 5vw, 4.2rem);
+      font-weight:300; line-height:1;
+    }
+    .products-title em { font-style:italic; color:var(--frost); }
+
+    .products-grid {
+      display:grid; grid-template-columns:repeat(4, 1fr); gap:1.5px;
+      border:1px solid rgba(200,223,240,.06);
+    }
+    .prod-card {
+      background:var(--deep);
+      padding:3rem 2rem 2.5rem;
+      border-right:1px solid rgba(200,223,240,.06);
+      position:relative; overflow:hidden;
+      transition:all .4s ease;
+      cursor:none;
+    }
+    .prod-card:last-child { border-right:none; }
+    .prod-card::before {
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(ellipse at 50% 30%, var(--glow2) 0%, transparent 60%);
+      opacity:0; transition:opacity .4s;
+    }
+    .prod-card:hover::before { opacity:1; }
+    .prod-card:hover { background:rgba(11,17,36,.9); }
+
+    .prod-num {
+      font-family:'Cormorant Garamond', serif;
+      font-size:.75rem; color:var(--dim); letter-spacing:2px;
+      margin-bottom:3rem;
+    }
+    .prod-icon {
+      font-size:3.5rem; display:block; margin-bottom:2rem;
+      transition:transform .4s ease;
+      filter:drop-shadow(0 0 20px rgba(160,210,240,.3));
+    }
+    .prod-card:hover .prod-icon { transform:translateY(-6px) scale(1.05); }
+    .prod-name {
+      font-family:'Cormorant Garamond', serif;
+      font-size:1.6rem; font-weight:400; margin-bottom:1rem;
+      color:var(--ice);
+    }
+    .prod-desc {
+      font-size:.8rem; color:var(--silver); line-height:1.9;
+      margin-bottom:2.5rem;
+    }
+    .prod-tag {
+      font-size:.6rem; letter-spacing:3px; text-transform:uppercase;
+      color:var(--accent); display:flex; align-items:center; gap:.6rem;
+    }
+    .prod-tag::before { content:''; width:20px; height:1px; background:var(--accent); }
+
+    /* ── PHILOSOPHY ───────────────────────────── */
+    .philosophy {
+      background:var(--navy);
+      border-top:1px solid rgba(200,223,240,.06);
+      border-bottom:1px solid rgba(200,223,240,.06);
+    }
+    .phil-inner { max-width:1200px; margin:0 auto; }
+    .phil-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:8rem; align-items:center;
+    }
+    .phil-left {}
+    .phil-big-quote {
+      font-family:'Cormorant Garamond', serif;
+      font-size:clamp(2rem, 4vw, 3.2rem); font-weight:300;
+      line-height:1.25; color:var(--frost);
+    }
+    .phil-big-quote em { font-style:italic; color:var(--accent); }
+    .phil-author {
+      margin-top:2.5rem; font-size:.65rem; letter-spacing:3px;
+      text-transform:uppercase; color:var(--dim);
+    }
+
+    .phil-right { display:flex; flex-direction:column; gap:0; }
+    .phil-item {
+      padding:2rem 0;
+      border-bottom:1px solid rgba(200,223,240,.07);
+      display:grid; grid-template-columns:40px 1fr; gap:1.5rem;
+      align-items:start; transition:all .3s;
+    }
+    .phil-item:hover { padding-left:.8rem; }
+    .phil-item-num {
+      font-family:'Cormorant Garamond', serif;
+      font-size:1rem; color:var(--dim); padding-top:.15rem;
+    }
+    .phil-item-title { font-size:.9rem; font-weight:400; margin-bottom:.5rem; letter-spacing:.5px; }
+    .phil-item-desc { font-size:.8rem; color:var(--silver); line-height:1.9; }
+
+    /* ── COLLECTION VISUAL ────────────────────── */
+    .coll-section { max-width:1200px; margin:0 auto; }
+    .coll-grid {
+      display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.5px;
+      margin-top:4rem;
+    }
+    .coll-card {
+      aspect-ratio:3/4; position:relative; overflow:hidden;
+      background:var(--navy);
+      border:1px solid rgba(200,223,240,.06);
+      transition:all .4s;
+      cursor:none;
+    }
+    .coll-card:hover { border-color:rgba(200,223,240,.15); }
+    .coll-card-bg {
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:8rem;
+      background:radial-gradient(ellipse at 50% 40%, var(--glow) 0%, transparent 65%);
+      transition:transform .5s ease;
+    }
+    .coll-card:hover .coll-card-bg { transform:scale(1.04); }
+    .coll-card-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(to top, rgba(4,6,13,.9) 0%, transparent 50%);
+    }
+    .coll-card-info {
+      position:absolute; bottom:0; left:0; right:0; padding:2rem;
+    }
+    .coll-card-name {
+      font-family:'Cormorant Garamond', serif;
+      font-size:1.5rem; font-weight:400; margin-bottom:.4rem;
+    }
+    .coll-card-sub { font-size:.68rem; letter-spacing:2px; color:var(--silver); text-transform:uppercase; }
+
+    .coll-card-wide {
+      grid-column:span 2; aspect-ratio:auto;
+      min-height:300px;
+    }
+    .coll-card-wide .coll-card-bg { font-size:12rem; }
+
+    /* ── TIMELINE ─────────────────────────────── */
+    .timeline-section { max-width:900px; margin:0 auto; }
+    .timeline { margin-top:4rem; position:relative; }
+    .timeline::before {
+      content:''; position:absolute; left:0; top:0; bottom:0;
+      width:1px; background:linear-gradient(to bottom, transparent, rgba(200,223,240,.15), transparent);
+    }
+    .tl-item {
+      padding:0 0 3.5rem 3rem; position:relative;
+    }
+    .tl-item::before {
+      content:''; position:absolute; left:-3px; top:6px;
+      width:7px; height:7px; border-radius:50%;
+      background:var(--void); border:1px solid var(--accent);
+    }
+    .tl-date { font-size:.62rem; letter-spacing:3px; color:var(--accent); text-transform:uppercase; margin-bottom:.6rem; }
+    .tl-title {
+      font-family:'Cormorant Garamond', serif;
+      font-size:1.4rem; font-weight:400; margin-bottom:.7rem;
+    }
+    .tl-title em { font-style:italic; color:var(--frost); }
+    .tl-desc { font-size:.82rem; color:var(--silver); line-height:1.9; max-width:540px; }
+
+    /* ── CONTACT / CTA ────────────────────────── */
+    .cta-section {
+      text-align:center; max-width:700px; margin:0 auto;
+      padding:10rem 5vw;
+      position:relative; z-index:2;
+    }
+    .cta-title {
+      font-family:'Cormorant Garamond', serif;
+      font-size:clamp(3rem, 8vw, 6.5rem);
+      font-weight:300; line-height:.95; margin-bottom:2rem;
+    }
+    .cta-title em { font-style:italic; color:var(--frost); }
+    .cta-sub { font-size:.85rem; color:var(--silver); line-height:2; margin-bottom:3.5rem; letter-spacing:.5px; }
+
+    .cta-form { display:flex; gap:0; max-width:440px; margin:0 auto; }
+    .cta-input {
+      flex:1; background:transparent;
+      border:1px solid rgba(200,223,240,.15); border-right:none;
+      color:var(--ice); padding:.9rem 1.4rem;
+      font-family:'Jost',sans-serif; font-size:.82rem; font-weight:300;
+      letter-spacing:1px; outline:none;
+      transition:border-color .3s;
+    }
+    .cta-input::placeholder { color:var(--dim); }
+    .cta-input:focus { border-color:rgba(200,223,240,.3); }
+    .cta-btn {
+      background:var(--frost); color:var(--void);
+      border:1px solid var(--frost);
+      padding:.9rem 1.8rem; font-family:'Jost',sans-serif;
+      font-size:.72rem; font-weight:500; letter-spacing:2.5px;
+      text-transform:uppercase; cursor:none; transition:all .3s;
+    }
+    .cta-btn:hover { background:transparent; color:var(--frost); }
+
+    /* ── FOOTER ───────────────────────────────── */
+    footer {
+      position:relative; z-index:2;
+      border-top:1px solid rgba(200,223,240,.07);
+      padding:3rem 5vw 2.5rem;
+    }
+    .footer-inner {
+      display:flex; justify-content:space-between; align-items:center;
+      flex-wrap:wrap; gap:1.5rem;
+    }
+    .footer-logo {
+      font-family:'Cormorant Garamond', serif;
+      font-size:1.2rem; letter-spacing:4px; text-transform:uppercase;
+      color:var(--silver);
+    }
+    .footer-links { display:flex; gap:2rem; }
+    .footer-links a {
+      font-size:.62rem; letter-spacing:2.5px; text-transform:uppercase;
+      color:var(--dim); text-decoration:none; transition:color .3s;
+    }
+    .footer-links a:hover { color:var(--silver); }
+    .footer-copy { font-size:.65rem; color:var(--dim); letter-spacing:1px; }
+
+    /* ── REVEAL ───────────────────────────────── */
+    .reveal { opacity:0; transform:translateY(40px); transition:all .9s cubic-bezier(.16,1,.3,1); }
+    .reveal.up { opacity:1; transform:translateY(0); }
+
+    /* ── ANIMATIONS ───────────────────────────── */
+    @keyframes fadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── RESPONSIVE ───────────────────────────── */
+    @media(max-width:900px) {
+      .origins-grid { grid-template-columns:1fr; gap:3rem; }
+      .products-grid { grid-template-columns:1fr 1fr; }
+      .phil-grid { grid-template-columns:1fr; gap:4rem; }
+      .coll-grid { grid-template-columns:1fr 1fr; }
+      .coll-card-wide { grid-column:span 2; }
+      .footer-inner { flex-direction:column; align-items:flex-start; }
+      nav .nav-links { display:none; }
+    }
+    @media(max-width:600px) {
+      .products-grid { grid-template-columns:1fr; }
+      .coll-grid { grid-template-columns:1fr; }
+      .coll-card-wide { grid-column:span 1; }
+      .hero-title { font-size:4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<canvas id="star-canvas"></canvas>
+
+<!-- ── NAV ── -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">❄</div>
+    SnowHoes
+  </a>
+  <ul class="nav-links">
+    <li><a href="#origines">Origines</a></li>
+    <li><a href="#collection">Collection</a></li>
+    <li><a href="#philosophie">Philosophie</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <p class="hero-eyebrow">Collection Hiver 2026 &nbsp;·&nbsp; <span>SnowHoes</span></p>
+  <h1 class="hero-title">
+    L'Hiver<br/>
+    <em class="line2">Autrement.</em>
+  </h1>
+  <p class="hero-sub">Des accessoires pensés pour ceux qui refusent de subir le froid. Gants, écharpes, bonnets, cache-cous.</p>
+  <div class="hero-divider"></div>
+  <p class="hero-scroll">Découvrir</p>
+</section>
+
+<!-- ── BAND ── -->
+<div class="band">
+  <div class="band-track">
+    <span>Gants Thermiques</span>
+    <span>Écharpes Douces</span>
+    <span>Bonnets Urban</span>
+    <span>Cache-Cous Pro</span>
+    <span>Protection -20°C</span>
+    <span>Style & Confort</span>
+    <span>Collection 2025</span>
+    <span>SnowHoes</span>
+    <span>Gants Thermiques</span>
+    <span>Écharpes Douces</span>
+    <span>Bonnets Urban</span>
+    <span>Cache-Cous Pro</span>
+    <span>Protection -20°C</span>
+    <span>Style & Confort</span>
+    <span>Collection 2025</span>
+    <span>SnowHoes</span>
+  </div>
+</div>
+
+<!-- ── ORIGINS ── -->
+<div class="wrap" id="origines">
+  <div class="origins">
+    <div class="label reveal">Origines</div>
+    <div class="origins-grid">
+      <div class="origins-left reveal">
+        <h2 class="origins-title">
+          Nés d'un<br/>
+          hiver <em>difficile.</em>
+        </h2>
+        <div class="origins-body">
+          <p>Tout commence avec une idée simple : personne ne devrait souffrir du froid faute d'accessoires de qualité. SnowHoes est né de cette conviction, portée par des élèves en terminale Bac Pro Commerce.</p>
+          <p>Notre projet, c'est de proposer des accessoires qui protègent vraiment — sans sacrifier le style. Parce que se couvrir, c'est aussi s'affirmer.</p>
+        </div>
+        <div class="origins-quote">
+          <blockquote>« Dans le froid le plus intense, le style reste la dernière armure. »</blockquote>
+          <cite>— SnowHoes, 2026</cite>
+        </div>
+      </div>
+      <div class="origins-right reveal">
+        <div class="stat-block">
+          <div class="stat-n">4</div>
+          <div class="stat-desc">Catégories d'accessoires sélectionnées</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-n">−20<sup>°C</sup></div>
+          <div class="stat-desc">Résistance thermique garantie</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-n">100<sup>%</sup></div>
+          <div class="stat-desc">Engagement qualité premium</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-n">∞</div>
+          <div class="stat-desc">Possibilités de style au quotidien</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PRODUCTS ── -->
+<div class="wrap-sm" id="collection">
+  <div class="products-section">
+    <div class="products-head reveal">
+      <div>
+        <div class="label">Collection</div>
+        <h2 class="products-title">Albums &amp; <em>Projets 2026</em></h2>
+      </div>
+      <p style="font-size:.8rem;color:var(--silver);max-width:300px;line-height:1.9">Chaque pièce est une réponse au froid. Une protection pensée, une esthétique assumée.</p>
+    </div>
+    <div class="products-grid">
+      <div class="prod-card reveal">
+        <div class="prod-num">01 — Gants</div>
+        <span class="prod-icon">🧤</span>
+        <div class="prod-name">Gants Thermiques</div>
+        <div class="prod-desc">Isolation renforcée, revêtement imperméable. Maintiennent vos mains au chaud même par grand froid.</div>
+        <div class="prod-tag">Bientôt disponible</div>
+      </div>
+      <div class="prod-card reveal">
+        <div class="prod-num">02 — Écharpe</div>
+        <span class="prod-icon">🧣</span>
+        <div class="prod-name">Écharpe Signature</div>
+        <div class="prod-desc">Laine douce et respirante. Longue, polyvalente, elle s'adapte à tous les styles et toutes les températures.</div>
+        <div class="prod-tag">Bientôt disponible</div>
+      </div>
+      <div class="prod-card reveal">
+        <div class="prod-num">03 — Bonnet</div>
+        <span class="prod-icon">🧢</span>
+        <div class="prod-name">Bonnet Urban</div>
+        <div class="prod-desc">Style urbain, chaleur maximale. Couvre parfaitement les oreilles pour affronter le vent du quotidien.</div>
+        <div class="prod-tag">Bientôt disponible</div>
+      </div>
+      <div class="prod-card reveal">
+        <div class="prod-num">04 — Cache-cou</div>
+        <span class="prod-icon">🫧</span>
+        <div class="prod-name">Cache-Cou Pro</div>
+        <div class="prod-desc">Protection totale du cou et du bas du visage. Idéal pour le sport ou les journées les plus glaciales.</div>
+        <div class="prod-tag">Bientôt disponible</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── VISUAL COLLECTION ── -->
+<div class="wrap-sm">
+  <div class="coll-section">
+    <div class="label reveal">Galerie</div>
+    <div class="coll-grid">
+      <div class="coll-card reveal">
+        <div class="coll-card-bg">🧤</div>
+        <div class="coll-card-overlay"></div>
+        <div class="coll-card-info">
+          <div class="coll-card-name">Gants</div>
+          <div class="coll-card-sub">Protection thermique</div>
+        </div>
+      </div>
+      <div class="coll-card reveal">
+        <div class="coll-card-bg">🧢</div>
+        <div class="coll-card-overlay"></div>
+        <div class="coll-card-info">
+          <div class="coll-card-name">Bonnet</div>
+          <div class="coll-card-sub">Style Urban</div>
+        </div>
+      </div>
+      <div class="coll-card reveal">
+        <div class="coll-card-bg">🫧</div>
+        <div class="coll-card-overlay"></div>
+        <div class="coll-card-info">
+          <div class="coll-card-name">Cache-Cou</div>
+          <div class="coll-card-sub">Protection totale</div>
+        </div>
+      </div>
+      <div class="coll-card coll-card-wide reveal">
+        <div class="coll-card-bg" style="font-size:14rem;">🧣</div>
+        <div class="coll-card-overlay"></div>
+        <div class="coll-card-info">
+          <div class="coll-card-name">Écharpe Signature</div>
+          <div class="coll-card-sub">La pièce emblématique de la collection</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PHILOSOPHY ── -->
+<div class="philosophy wrap" id="philosophie">
+  <div class="phil-inner">
+    <div class="phil-grid">
+      <div class="phil-left reveal">
+        <div class="label">Philosophie</div>
+        <p class="phil-big-quote">« Se protéger du froid,<br/>c'est aussi <em>s'affirmer</em><br/>face au monde. »</p>
+        <p class="phil-author">— Manifeste SnowHoes</p>
+      </div>
+      <div class="phil-right">
+        <div class="phil-item reveal">
+          <div class="phil-item-num">01</div>
+          <div>
+            <div class="phil-item-title">Chaleur Authentique</div>
+            <div class="phil-item-desc">Matériaux soigneusement sélectionnés pour leurs propriétés isolantes. Efficaces même par grand froid.</div>
+          </div>
+        </div>
+        <div class="phil-item reveal">
+          <div class="phil-item-num">02</div>
+          <div>
+            <div class="phil-item-title">Esthétique Assumée</div>
+            <div class="phil-item-desc">Des designs contemporains qui s'accordent avec toutes vos tenues, de l'école à la sortie.</div>
+          </div>
+        </div>
+        <div class="phil-item reveal">
+          <div class="phil-item-num">03</div>
+          <div>
+            <div class="phil-item-title">Engagement Responsable</div>
+            <div class="phil-item-desc">Nous cherchons des fournisseurs qui partagent nos valeurs pour un impact réduit sur l'environnement.</div>
+          </div>
+        </div>
+        <div class="phil-item reveal">
+          <div class="phil-item-num">04</div>
+          <div>
+            <div class="phil-item-title">Accessibilité Prix</div>
+            <div class="phil-item-desc">La qualité ne devrait pas être réservée à quelques-uns. SnowHoes, pour tous.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TIMELINE ── -->
+<div class="wrap" id="timeline">
+  <div class="timeline-section">
+    <div class="label reveal">Chronologie</div>
+    <h2 class="origins-title reveal" style="margin-bottom:0">Notre <em>chemin</em></h2>
+    <div class="timeline" style="margin-top:4rem">
+      <div class="tl-item reveal">
+        <div class="tl-date">Sept. 2026 — Naissance</div>
+        <div class="tl-title">L'idée <em>germe</em></div>
+        <div class="tl-desc">Dans le cadre du Bac Pro TMCV, le projet SnowHoes prend forme. Un constat : les accessoires de protection contre le froid manquent souvent de style.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Oct. 2026 — Étude de marché</div>
+        <div class="tl-title">Comprendre <em>le besoin</em></div>
+        <div class="tl-desc">Sondages, analyse de la concurrence, identification des fournisseurs potentiels. La base solide d'un projet commercial sérieux.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Déc. 2026 — Identité visuelle</div>
+        <div class="tl-title">SnowHoes <em>naît</em></div>
+        <div class="tl-desc">Le nom, le logo, les couleurs. Une identité de marque forte, pensée pour marquer les esprits et rester mémorable.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Mars 2026 — Lancement</div>
+        <div class="tl-title">La collection <em>s'ouvre</em></div>
+        <div class="tl-desc">Présentation officielle du projet. Gants, écharpes, bonnets, cache-cous — SnowHoes est prêt à affronter le froid avec vous.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CTA ── -->
+<div class="cta-section" id="contact">
+  <div class="label reveal" style="justify-content:center">Rester Informé</div>
+  <h2 class="cta-title reveal">Soyez<br/>les <em>premiers.</em></h2>
+  <p class="cta-sub reveal">La collection arrive bientôt. Inscrivez-vous pour être alerté en avant-première et recevoir nos offres de lancement.</p>
+  <div class="cta-form reveal">
+    <input class="cta-input" type="email" placeholder="votre@email.com"/>
+    <button class="cta-btn" onclick="handleSub(event)">S'inscrire</button>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">SnowHoes</div>
+    <div class="footer-links">
+      <a href="#">Collection</a>
+      <a href="#">À propos</a>
+      <a href="#">Contact</a>
+      <a href="#">Instagram</a>
+    </div>
+    <p class="footer-copy">© 2026 SnowHoes — Projet Terminale Bac Pro TMCV</p>
+  </div>
+</footer>
+
+<script>
+/* ── CURSOR ── */
+const cur = document.getElementById('cur');
+const ring = document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function anim(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim)})();
+
+/* ── STARS ── */
+const canvas=document.getElementById('star-canvas');
+const ctx=canvas.getContext('2d');
+let W,H,stars=[];
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight;}
+resize(); window.addEventListener('resize',resize);
+for(let i=0;i<220;i++){
+  stars.push({
+    x:Math.random()*2000,y:Math.random()*1200,
+    r:Math.random()*.9+.1,
+    a:Math.random(),da:(Math.random()-.5)*.003
+  });
+}
+function drawStars(){
+  ctx.clearRect(0,0,W,H);
+  stars.forEach(s=>{
+    s.a=Math.max(.05,Math.min(1,s.a+s.da));
+    if(s.a<=.05||s.a>=1)s.da*=-1;
+    ctx.beginPath();
+    ctx.arc(s.x%W,s.y%H,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(200,223,240,${s.a*.6})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+
+/* ── NAV SCROLL ── */
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{nav.classList.toggle('scrolled',scrollY>60);});
+
+/* ── REVEAL ── */
+const revealEls=document.querySelectorAll('.reveal');
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('up'),i*60);obs.unobserve(e.target);}});
+},{threshold:.08});
+revealEls.forEach(el=>obs.observe(el));
+
+/* ── SUBSCRIBE ── */
+function handleSub(e){
+  e.preventDefault();
+  const inp=document.querySelector('.cta-input');
+  if(inp.value.includes('@')){
+    inp.value='✓ Inscription confirmée, merci !';
+    inp.style.color='var(--accent)';
+    inp.style.borderColor='var(--accent)';
+  } else {
+    inp.style.borderColor='rgba(240,100,100,.4)';
+    inp.placeholder='Adresse email invalide';
+  }
+}
+</script>
+</body>
+</html>
