@@ -280,6 +280,13 @@
       filter:drop-shadow(0 0 20px rgba(160,210,240,.3));
     }
     .prod-card:hover .prod-icon { transform:translateY(-6px) scale(1.05); }
+    .prod-img {
+      width:100%; height:150px; object-fit:cover; border-radius:3px;
+      margin-bottom:2rem; display:block;
+      filter:saturate(.85) brightness(.9);
+      transition:transform .4s ease;
+    }
+    .prod-card:hover .prod-img { transform:translateY(-6px) scale(1.03); }
     .prod-name {
       font-family:'Cormorant Garamond', serif;
       font-size:1.6rem; font-weight:400; margin-bottom:1rem;
@@ -292,6 +299,7 @@
     .prod-tag {
       font-size:.6rem; letter-spacing:3px; text-transform:uppercase;
       color:var(--accent); display:flex; align-items:center; gap:.6rem;
+      text-decoration:none;
     }
     .prod-tag::before { content:''; width:20px; height:1px; background:var(--accent); }
 
@@ -586,10 +594,10 @@
     <div class="products-grid">
       <div class="prod-card reveal">
         <div class="prod-num">01 — Gants</div>
-        <span class="prod-icon">🧤</span>
-        <div class="prod-name">Gants Thermiques</div>
-        <div class="prod-desc">Isolation renforcée, revêtement imperméable. Maintiennent vos mains au chaud même par grand froid.</div>
-        <div class="prod-tag">Bientôt disponible</div>
+        <img class="prod-img" src="https://images.unsplash.com/photo-1675652807734-fdfbfea4fc4e?fm=jpg&q=60&w=800&auto=format&fit=crop" alt="Sous-gants thermiques MT500 noir"/>
+        <div class="prod-name">Gants Thermiques MT500</div>
+        <div class="prod-desc">Sous-gants sans couture, tactiles au niveau du pouce et de l'index, avec revêtement antidérapant. Jusqu'à 3°C supplémentaires sous vos gants.</div>
+        <a class="prod-tag" href="https://www.decathlon.fr/p/sous-gants-sans-couture-de-trekking-adulte-mt500-noir/339331/c382m8738802" target="_blank" rel="noopener">7,99 € · Decathlon</a>
       </div>
       <div class="prod-card reveal">
         <div class="prod-num">02 — Écharpe</div>
@@ -622,11 +630,13 @@
     <div class="label reveal">Galerie</div>
     <div class="coll-grid">
       <div class="coll-card reveal">
-        <div class="coll-card-bg">🧤</div>
+        <div class="coll-card-bg" style="background:none;">
+          <img src="https://images.unsplash.com/photo-1675652807734-fdfbfea4fc4e?fm=jpg&q=60&w=1200&auto=format&fit=crop" alt="Gants SnowHoes" style="width:100%;height:100%;object-fit:cover;"/>
+        </div>
         <div class="coll-card-overlay"></div>
         <div class="coll-card-info">
           <div class="coll-card-name">Gants</div>
-          <div class="coll-card-sub">Protection thermique</div>
+          <div class="coll-card-sub">Protection thermique — 7,99€</div>
         </div>
       </div>
       <div class="coll-card reveal">
